@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beyond Words · Práctica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#EFEDF3;
+    --surface:#FFFFFF;
+    --surface-2:#F7F5FA;
+    --ink:#1E1B2E;
+    --muted:#6B6780;
+    --line:#DAD6E4;
+    --accent:#E0356F;
+    --accent-soft:#FCE7EE;
+    --signal:#2F8F83;
+    --signal-soft:#E2F1EF;
+    --warn:#B85C1F;
+    --warn-soft:#FBEDE1;
+    --display:"Fraunces",Georgia,serif;
+    --body:"Instrument Sans",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:var(--body);
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px 80px}
+
+  /* ---------- header ---------- */
+  header.top{padding:34px 0 22px}
+  .eyebrow{
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--muted);margin:0 0 18px
+  }
+  .hero-line{
+    font-family:var(--display);
+    font-size:clamp(24px,5.2vw,38px);
+    line-height:1.35;font-weight:600;margin:0 0 10px
+  }
+  .hero-sub{color:var(--muted);margin:0;max-width:52ch}
+
+  /* ---------- prosody rendering (signature) ---------- */
+  .prosody{font-family:var(--display);font-weight:600;line-height:2.1}
+  .pgroup{display:inline}
+  .pbreak{
+    display:inline-block;width:1px;height:.95em;background:var(--line);
+    margin:0 .55em;vertical-align:-.12em
+  }
+  .prom{
+    color:var(--accent);position:relative;padding:0 .04em;
+  }
+  .prom::before{
+    content:"";position:absolute;top:-.42em;left:50%;transform:translateX(-50%);
+    width:6px;height:6px;border-radius:50%;background:var(--accent)
+  }
+  .link-arc{color:var(--accent);opacity:.55;font-size:.9em;padding:0 .02em}
+
+  /* ---------- tabs ---------- */
+  nav.tabs{
+    display:flex;gap:4px;overflow-x:auto;padding:4px;margin:26px 0 20px;
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    scrollbar-width:none
+  }
+  nav.tabs::-webkit-scrollbar{display:none}
+  nav.tabs button{
+    flex:0 0 auto;border:0;background:transparent;color:var(--muted);
+    font-family:var(--body);font-size:14px;font-weight:500;
+    padding:9px 14px;border-radius:10px;cursor:pointer;white-space:nowrap
+  }
+  nav.tabs button:hover{color:var(--ink);background:var(--surface-2)}
+  nav.tabs button[aria-selected="true"]{background:var(--ink);color:#fff}
+  nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ---------- panels & cards ---------- */
+  .panel{display:none}
+  .panel.on{display:block}
+  .card{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:16px;padding:22px;margin-bottom:16px
+  }
+  .card h2{
+    font-family:var(--display);font-size:21px;font-weight:600;
+    margin:0 0 6px;line-height:1.3
+  }
+  .card p.lede{color:var(--muted);margin:0 0 18px;font-size:14.5px}
+  .label{
+    display:block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted);margin:0 0 8px
+  }
+  .hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+
+  /* ---------- controls ---------- */
+  input[type=text],textarea,select{
+    width:100%;font-family:var(--body);font-size:15px;color:var(--ink);
+    background:var(--surface-2);border:1px solid var(--line);
+    border-radius:11px;padding:11px 13px
+  }
+  textarea{resize:vertical;min-height:90px;line-height:1.5}
+  input:focus,textarea:focus,select:focus{
+    outline:2px solid var(--accent);outline-offset:1px;background:var(--surface)
+  }
+  .btn{
+    font-family:var(--body);font-size:14.5px;font-weight:600;
+    border:0;border-radius:11px;padding:11px 18px;cursor:pointer;
+    background:var(--ink);color:#fff
+  }
+  .btn:hover{background:#332E4A}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost:hover{background:var(--surface-2)}
+  .btn.pink{background:var(--accent)}
+  .btn.pink:hover{background:#C82A60}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .row.end{justify-content:flex-end}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .chip{
+    border:1px solid var(--line);background:var(--surface-2);color:var(--ink);
+    font-family:var(--body);font-size:13.5px;padding:8px 13px;
+    border-radius:999px;cursor:pointer;text-align:left
+  }
+  .chip:hover{border-color:var(--ink)}
+  .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ---------- chat ---------- */
+  #chatLog{
+    display:flex;flex-direction:column;gap:12px;
+    max-height:380px;overflow-y:auto;padding:4px 2px 8px;margin-bottom:14px
+  }
+  .msg{max-width:82%;padding:11px 14px;border-radius:14px;font-size:15px;line-height:1.5}
+  .msg.them{background:var(--surface-2);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:5px}
+  .msg.me{background:var(--ink);color:#fff;align-self:flex-end;border-bottom-right-radius:5px}
+  .msg .who{
+    display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;opacity:.55;margin-bottom:4px
+  }
+  .typing{font-family:var(--mono);font-size:12px;color:var(--muted);padding:4px 2px}
+
+  /* ---------- results ---------- */
+  .result{
+    background:var(--surface-2);border:1px solid var(--line);
+    border-radius:13px;padding:17px;margin-top:16px
+  }
+  .result h3{
+    font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 7px;font-weight:500
+  }
+  .result h3+p{margin:0 0 16px}
+  .result p:last-child{margin-bottom:0}
+  .heard{font-family:var(--mono);font-size:14px;line-height:2}
+  .ok{color:var(--signal);background:var(--signal-soft);border-radius:4px;padding:2px 4px}
+  .lost{color:var(--warn);background:var(--warn-soft);border-radius:4px;padding:2px 4px;text-decoration:underline wavy}
+
+  /* ---------- coach traits ---------- */
+  .traits{margin-bottom:18px}
+  .traits h4{
+    font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);font-weight:500;margin:16px 0 9px
+  }
+  .traits h4:first-child{margin-top:0}
+  .out{
+    white-space:pre-wrap;font-size:15px;line-height:1.65;
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:13px;padding:17px;margin-top:14px
+  }
+  .err{color:var(--warn);font-size:14px;margin-top:12px}
+  .note{
+    font-size:13px;color:var(--muted);border-left:2px solid var(--line);
+    padding-left:12px;margin:14px 0 0
+  }
+  footer{text-align:center;color:var(--muted);font-size:12.5px;padding:30px 0 0}
+
+  /* ---------- voz ---------- */
+  .modes{
+    display:inline-flex;gap:3px;background:var(--surface-2);
+    border:1px solid var(--line);border-radius:11px;padding:3px;margin-bottom:16px
+  }
+  .modes button{
+    border:0;background:transparent;font-family:var(--body);font-size:13.5px;
+    font-weight:500;color:var(--muted);padding:7px 15px;border-radius:9px;cursor:pointer
+  }
+  .modes button[aria-pressed="true"]{background:var(--ink);color:#fff}
+  .modes button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .voicebar{
+    display:flex;gap:13px;align-items:center;padding:15px;margin-bottom:13px;
+    background:var(--surface-2);border:1px solid var(--line);border-radius:13px
+  }
+  .micbig{
+    flex:0 0 auto;width:56px;height:56px;border-radius:50%;border:0;cursor:pointer;
+    background:var(--accent);color:#fff;font-size:22px;line-height:1;
+    display:flex;align-items:center;justify-content:center
+  }
+  .micbig[data-on="1"]{background:var(--ink)}
+  .micbig:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  .live{flex:1;min-width:0;font-size:15px;line-height:1.45;color:var(--ink)}
+  .live:empty::before{content:"Tocá el micrófono y hablá";color:var(--muted)}
+  .vopts{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
+  .vopts label{display:flex;gap:6px;align-items:center;cursor:pointer}
+  .vopts select{width:auto;font-size:13px;padding:5px 8px}
+  .hidden-txt{
+    background:var(--surface-2);border:1px dashed var(--line);align-self:flex-start;
+    border-radius:14px;padding:11px 14px;font-size:14px;color:var(--muted)
+  }
+  .hidden-txt button{
+    border:0;background:transparent;color:var(--accent);font-family:var(--body);
+    font-size:13px;font-weight:600;cursor:pointer;padding:0;margin-left:8px
+  }
+  .banner{
+    display:none;background:var(--warn-soft);border:1px solid #E8CBAF;
+    border-radius:13px;padding:14px 16px;margin-bottom:16px;font-size:14px;line-height:1.5
+  }
+  .banner.on{display:block}
+  .banner strong{display:block;margin-bottom:3px}
+  .banner a{color:var(--warn);font-weight:600}
+  @media (prefers-reduced-motion:no-preference){
+    .rec{animation:pulse 1.3s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  }
+  @media(max-width:520px){
+    .card{padding:18px}
+    .msg{max-width:92%}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <p class="eyebrow">Beyond Words · práctica entre asesorías</p>
+  <div class="hero-line prosody" id="heroLine"></div>
+  <p class="hero-sub">Entrená acá durante la semana. Lo que no te salga, lo llevás a la asesoría.</p>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-p="conv">Conversar</button>
+  <button role="tab" aria-selected="false" data-p="int">Escuchar la intención</button>
+  <button role="tab" aria-selected="false" data-p="say">Decirlo en voz alta</button>
+  <button role="tab" aria-selected="false" data-p="send">Enviar un audio</button>
+  <button role="tab" aria-selected="false" data-p="coach">Modo coach</button>
+</nav>
+
+<div class="banner" id="micBanner"></div>
+
+<!-- ============ CONVERSAR ============ -->
+<section class="panel on" id="p-conv">
+  <div class="card">
+    <h2>Conversar sin guionar</h2>
+    <p class="lede">Elegí la situación. Vas a hablar con alguien que no se frena a corregirte: sostiene la conversación y espera tu respuesta. No lo pienses de más — es el punto.</p>
+    <div class="modes" role="group" aria-label="Modo de práctica">
+      <button id="mVoice" aria-pressed="true">Hablando</button>
+      <button id="mText" aria-pressed="false">Escribiendo</button>
+    </div>
+    <div class="vopts" id="voiceOpts" style="margin-bottom:16px">
+      <label for="rate">Velocidad
+        <select id="rate">
+          <option value="0.9">tranquila</option>
+          <option value="1" selected>normal</option>
+          <option value="1.15">rápida</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="hideTxt"> Escuchar sin leer</label>
+      <label><input type="checkbox" id="autoSend" checked> Enviar al terminar de hablar</label>
+    </div>
+    <div class="chips" id="scenarios"></div>
+    <label class="label" for="ctx">Tu contexto (opcional)</label>
+    <input type="text" id="ctx" placeholder="Ej: soy PM en una empresa de logística, HQ en Chicago">
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="startChat">Empezar</button>
+      <button class="btn ghost" id="endChat" disabled>Terminar y ver devolución</button>
+    </div>
+  </div>
+
+  <div class="card" id="chatCard" style="display:none">
+    <div id="chatLog"></div>
+    <div class="voicebar" id="voiceBar">
+      <button class="micbig" id="micChat" data-on="0" aria-label="Hablar">🎙</button>
+      <p class="live" id="liveTx"></p>
+    </div>
+    <label class="label" for="chatIn">Tu respuesta</label>
+    <textarea id="chatIn" placeholder="Escribí en inglés..."></textarea>
+    <div class="row end" style="margin-top:10px">
+      <button class="btn pink" id="sendChat">Enviar</button>
+    </div>
+    <p class="note">Lo que ves escrito es lo que el navegador te <em>escuchó</em>. Si aparece una palabra que no dijiste, ahí hay algo que no está llegando. La devolución mira cómo armaste el mensaje, no cómo sonó: para el sonido, mandale el audio a Cami.</p>
+    <div id="chatFeedback"></div>
+  </div>
+</section>
+
+<!-- ============ INTENCIÓN ============ -->
+<section class="panel" id="p-int">
+  <div class="card">
+    <h2>La misma frase, otra intención</h2>
+    <p class="lede">Una frase de trabajo. Según dónde cae el peso, quiere decir otra cosa. Entrenás el oído para escuchar lo que hay atrás del mensaje.</p>
+    <div class="row">
+      <button class="btn" id="newDrill">Dame una frase</button>
+    </div>
+    <div id="drillArea"></div>
+  </div>
+</section>
+
+<!-- ============ DECIRLO ============ -->
+<section class="panel" id="p-say">
+  <div class="card">
+    <h2>Marcá la frase y decila</h2>
+    <p class="lede">Escribí la frase que necesitás decir esta semana. Te la devuelvo marcada: dónde cortar, qué palabra lleva el peso y qué se une con qué.</p>
+    <label class="label" for="sayIn">Tu frase en inglés</label>
+    <input type="text" id="sayIn" placeholder="I'd like to go back to what you mentioned earlier">
+    <div class="row" style="margin-top:12px">
+      <button class="btn" id="markBtn">Marcar la frase</button>
+    </div>
+    <div id="markArea"></div>
+  </div>
+
+  <div class="card">
+    <h2>Probá si se entiende</h2>
+    <p class="lede">Decí la frase en voz alta con el micrófono abierto. El navegador escribe lo que escuchó. Si escuchó otra cosa, ahí hay algo que trabajar.</p>
+    <p class="note" style="margin-top:0">No mide si sonás nativa. Mide si el mensaje llega. Funciona en Chrome, con micrófono habilitado.</p>
+    <div class="row" style="margin-top:14px">
+      <button class="btn pink" id="micBtn" disabled>Marcá una frase primero</button>
+    </div>
+    <div id="micArea"></div>
+  </div>
+</section>
+
+<!-- ============ ENVIAR AUDIO ============ -->
+<section class="panel" id="p-send">
+  <div class="card">
+    <h2>Mandale el audio a Cami</h2>
+    <p class="lede">Grabá el audio con tu celular y mandalo por WhatsApp. Completá esto primero: lo copiás y lo mandás junto con el audio, así ella escucha sabiendo qué buscabas.</p>
+    <label class="label" for="sTarget">Qué estabas practicando</label>
+    <input type="text" id="sTarget" placeholder="La frase, el párrafo o la situación">
+    <label class="label" for="sHard" style="margin-top:16px">Qué te costó</label>
+    <textarea id="sHard" placeholder="Ej: se me traba la parte del medio, no sé dónde cortar"></textarea>
+    <label class="label" for="sTest" style="margin-top:16px">Resultado del test de micrófono (si lo hiciste)</label>
+    <input type="text" id="sTest" placeholder="Ej: escuchó 'ship' donde dije 'sheep'">
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="buildCard">Armar el mensaje</button>
+    </div>
+    <div id="sendArea"></div>
+  </div>
+</section>
+
+<!-- ============ COACH ============ -->
+<section class="panel" id="p-coach">
+  <div class="card">
+    <h2>Devolución de un audio</h2>
+    <p class="lede">Escuchá el audio una vez y marcá lo que oíste. La devolución sale escrita, lista para copiar y mandar.</p>
+
+    <label class="label" for="cWho">Alumna y contexto</label>
+    <input type="text" id="cWho" placeholder="Ej: Sofía · practicaba el update semanal">
+
+    <label class="label" for="cTarget" style="margin-top:16px">Qué estaba diciendo</label>
+    <textarea id="cTarget" placeholder="Pegá acá el mensaje que te mandó, o escribí la frase que grabó"></textarea>
+
+    <div class="traits" id="traits" style="margin-top:18px"></div>
+
+    <label class="label" for="cNotes">Lo que escuchaste, en tus palabras</label>
+    <textarea id="cNotes" placeholder="Ej: arranca bien pero corta después de cada palabra, no agrupa. El peso siempre cae en la última palabra."></textarea>
+
+    <div class="row" style="margin-top:14px">
+      <button class="btn pink" id="genFb">Escribir la devolución</button>
+      <button class="btn ghost" id="clearFb">Limpiar</button>
+    </div>
+    <div id="coachArea"></div>
+  </div>
+</section>
+
+<footer>Beyond Words · el cómo importa más que el qué</footer>
+</div>
+
+<script>
+/* ============================================================
+   Marcado prosódico
+   //   corte de thought group
+   *x*  palabra que lleva el peso
+   a~b  linking
+   ============================================================ */
+function renderProsody(txt){
+  const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return txt.split("//").map(g=>{
+    let h = esc(g.trim());
+    h = h.replace(/\*(.+?)\*/g,'<span class="prom">$1</span>');
+    h = h.replace(/(\S)~(\S)/g,'$1<span class="link-arc">‿</span>$2');
+    return '<span class="pgroup">'+h+'</span>';
+  }).join('<span class="pbreak"></span>');
+}
+document.getElementById('heroLine').innerHTML =
+  renderProsody("You already have the *expertise* // make~it *audible* in English");
+
+/* ============================================================
+   API
+   ============================================================ */
+async function ask(system, messages){
+  const r = await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      model:"claude-sonnet-4-6",
+      max_tokens:1000,
+      system:system,
+      messages:messages
+    })
+  });
+  if(!r.ok) throw new Error("status "+r.status);
+  const d = await r.json();
+  return (d.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
+}
+function parseJSON(t){
+  const clean = t.replace(/```json|```/g,"").trim();
+  const s = clean.indexOf("{"), e = clean.lastIndexOf("}");
+  return JSON.parse(s>=0 ? clean.slice(s,e+1) : clean);
+}
+function fail(el,msg){
+  el.innerHTML = '<p class="err">'+msg+' Probá de nuevo en un momento.</p>';
+}
+
+/* ============================================================
+   Tabs
+   ============================================================ */
+document.querySelectorAll('nav.tabs button').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(x=>x.setAttribute('aria-selected','false'));
+    b.setAttribute('aria-selected','true');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+    document.getElementById('p-'+b.dataset.p).classList.add('on');
+  };
+});
+
+/* ============================================================
+   Voz: escuchar (SpeechRecognition) y hablar (SpeechSynthesis)
+   ============================================================ */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const TTS = window.speechSynthesis || null;
+let enVoice = null;
+function pickVoice(){
+  if(!TTS) return;
+  const vs = TTS.getVoices().filter(v=>/^en[-_]/i.test(v.lang));
+  enVoice = vs.find(v=>/en[-_]US/i.test(v.lang) && /Google|Natural|Samantha|Aaron|Ava/i.test(v.name))
+         || vs.find(v=>/en[-_]US/i.test(v.lang))
+         || vs[0] || null;
+}
+if(TTS){ pickVoice(); TTS.onvoiceschanged = pickVoice; }
+function say(text, done){
+  if(!TTS){ done && done(); return; }
+  TTS.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  if(enVoice) u.voice = enVoice;
+  u.lang = enVoice ? enVoice.lang : 'en-US';
+  u.rate = parseFloat(document.getElementById('rate').value) || 1;
+  u.onend = ()=> done && done();
+  u.onerror = ()=> done && done();
+  TTS.speak(u);
+}
+
+/* por qué el micrófono puede no andar */
+const MIC_MSG = {
+  iframe:'<strong>El micrófono está bloqueado acá.</strong>Estás viendo la app dentro de otra página, y el navegador no le da micrófono a una página embebida. Abrila en una pestaña propia y anda. Mientras tanto podés usar el modo Escribiendo.',
+  insecure:'<strong>El micrófono está bloqueado acá.</strong>El navegador solo lo habilita en páginas seguras. Si abriste el archivo desde tu computadora, subilo a un sitio con https y entrá desde ahí.',
+  browser:'<strong>Este navegador no reconoce voz.</strong>Abrí la app en Chrome para practicar hablando. En el resto, la app funciona en modo Escribiendo.',
+  brave:'<strong>Brave no reconoce voz.</strong>Deja el botón a la vista pero nunca devuelve lo que decís. Abrí la app en Chrome para practicar hablando.'
+};
+function micEnv(){
+  if(!SR) return "browser";
+  if(!window.isSecureContext) return "insecure";
+  try{ if(window.self !== window.top) return "iframe"; }catch(e){ return "iframe"; }
+  if(braveDetected) return "brave";
+  return "ok";
+}
+let braveDetected = false;
+function paintBanner(){
+  const b=document.getElementById('micBanner'), env=micEnv();
+  if(env==="ok"){ b.classList.remove('on'); return; }
+  b.innerHTML = MIC_MSG[env] + (env==="iframe"
+    ? ' <a href="'+location.href+'" target="_blank" rel="noopener">Abrir en una pestaña nueva</a>' : '');
+  b.classList.add('on');
+}
+paintBanner();
+if(navigator.brave && typeof navigator.brave.isBrave === 'function'){
+  navigator.brave.isBrave().then(v=>{ if(v){ braveDetected=true; paintBanner(); } });
+}
+
+/* ============================================================
+   1 · CONVERSAR
+   ============================================================ */
+const SCENARIOS = [
+  {k:"update",   t:"Dar el update del proyecto frente al PM"},
+  {k:"cut",      t:"Te interrumpen y tenés que retomar"},
+  {k:"fast",     t:"Cliente que habla rápido"},
+  {k:"qa",       t:"Preguntas después de tu presentación"},
+  {k:"deadline", t:"Negociar una fecha de entrega"},
+  {k:"smalltalk",t:"Los cinco minutos antes de que arranque la call"},
+  {k:"pushback", t:"Alguien no está de acuerdo con tu propuesta"}
+];
+let scenario = null, history = [];
+const $ = id => document.getElementById(id);
+
+const chipBox = $('scenarios');
+SCENARIOS.forEach(s=>{
+  const b = document.createElement('button');
+  b.className='chip'; b.textContent=s.t; b.setAttribute('aria-pressed','false');
+  b.onclick=()=>{
+    chipBox.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true'); scenario=s.t;
+  };
+  chipBox.appendChild(b);
+});
+
+function chatSystem(){
+  return `You are a native English-speaking professional in this workplace situation: "${scenario}".
+The other person's context: ${$('ctx').value || "a professional working with a US head office"}.
+
+Rules:
+- Stay in role. You are a colleague, client or manager — never a teacher.
+- Speak natural, unsimplified professional English. Do not slow down or dumb it down.
+- NEVER correct grammar, vocabulary or phrasing. Never comment on their English. Never switch to Spanish.
+- Keep every turn to 1-3 sentences. Real people are brief.
+- Drive the conversation: ask follow-ups, push back, add time pressure, ask for specifics.
+- Occasionally ask them to clarify ONLY when their message is genuinely ambiguous.
+- Start with one short opening line that drops them straight into the moment.`;
+}
+function bubble(who,txt,cls){
+  const d=document.createElement('div'); d.className='msg '+cls;
+  d.innerHTML='<span class="who">'+who+'</span>'+txt.replace(/</g,"&lt;");
+  $('chatLog').appendChild(d); $('chatLog').scrollTop=$('chatLog').scrollHeight;
+}
+function botTurn(txt){
+  history.push({role:"assistant",content:txt});
+  if(voiceOn && $('hideTxt').checked){
+    const d=document.createElement('div'); d.className='msg hidden-txt';
+    d.innerHTML='🔊 Escuchá <button>ver el texto</button>';
+    d.querySelector('button').onclick=()=>{
+      d.className='msg them';
+      d.innerHTML='<span class="who">them</span>'+txt.replace(/</g,"&lt;");
+    };
+    $('chatLog').appendChild(d); $('chatLog').scrollTop=$('chatLog').scrollHeight;
+  } else {
+    bubble("them",txt,"them");
+  }
+  if(voiceOn) say(txt);
+}
+
+/* modo hablando / escribiendo */
+let voiceOn = true;
+function setMode(on){
+  voiceOn = on;
+  $('mVoice').setAttribute('aria-pressed', on?'true':'false');
+  $('mText').setAttribute('aria-pressed', on?'false':'true');
+  $('voiceOpts').style.display = on?'flex':'none';
+  const bar=$('voiceBar'); if(bar) bar.style.display = on?'flex':'none';
+  if(!on && TTS) TTS.cancel();
+}
+$('mVoice').onclick = ()=>setMode(true);
+$('mText').onclick  = ()=>setMode(false);
+if(!SR || !TTS){
+  setMode(false);
+  $('mVoice').disabled = true;
+  $('mVoice').title = "Tu navegador no reconoce voz. Abrilo en Chrome.";
+}
+
+/* micrófono dentro de la conversación */
+let chatRec = null, listening = false;
+function toggleListen(){
+  if(listening){ chatRec && chatRec.stop(); return; }
+  if(!SR){ $('liveTx').textContent = "Este navegador no reconoce voz. Abrilo en Chrome."; return; }
+  if(TTS) TTS.cancel();
+  chatRec = new SR();
+  chatRec.lang='en-US'; chatRec.continuous=true; chatRec.interimResults=true;
+  let finalTxt='';
+  $('liveTx').textContent=''; $('micChat').dataset.on='1';
+  $('micChat').classList.add('rec'); listening=true;
+  chatRec.onresult = e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const r=e.results[i];
+      if(r.isFinal) finalTxt += r[0].transcript+' '; else interim += r[0].transcript;
+    }
+    $('liveTx').textContent = (finalTxt+interim).trim();
+  };
+  chatRec.onerror = e=>{
+    $('liveTx').textContent = e.error==='not-allowed'
+      ? (micEnv()==="iframe"
+         ? "Abrí la app en una pestaña propia: acá el navegador bloquea el micrófono."
+         : "El navegador bloqueó el micrófono. Habilitalo en el candado de la barra de direcciones.")
+      : e.error==='network' ? "Este navegador no llega al servicio de voz. Pasa en Brave y en algunos Edge: abrila en Chrome."
+      : e.error==='no-speech' ? "No se escuchó nada. Probá de nuevo, más cerca."
+      : "Se cortó el micrófono ("+e.error+").";
+  };
+  chatRec.onend = ()=>{
+    listening=false; $('micChat').dataset.on='0'; $('micChat').classList.remove('rec');
+    const said = finalTxt.trim();
+    if(said){
+      $('chatIn').value = said;
+      if($('autoSend').checked) sendTurn();
+    }
+  };
+  chatRec.start();
+}
+$('micChat').onclick = toggleListen;
+
+$('startChat').onclick = async ()=>{
+  if(!scenario){ alert("Elegí una situación primero."); return; }
+  history=[]; $('chatLog').innerHTML=''; $('chatFeedback').innerHTML='';
+  $('chatCard').style.display='block'; $('endChat').disabled=false;
+  $('startChat').textContent='Reiniciar';
+  const t=document.createElement('div'); t.className='typing'; t.textContent='conectando...';
+  $('chatLog').appendChild(t);
+  try{
+    const first = await ask(chatSystem(),[{role:"user",content:"Begin the conversation now."}]);
+    t.remove(); botTurn(first);
+  }catch(e){ t.remove(); fail($('chatFeedback'),"No pude iniciar la conversación."); }
+};
+async function sendTurn(){
+  const v=$('chatIn').value.trim(); if(!v) return;
+  $('chatIn').value=''; $('liveTx').textContent='';
+  bubble("vos",v,"me"); history.push({role:"user",content:v});
+  const t=document.createElement('div'); t.className='typing'; t.textContent='escribiendo...';
+  $('chatLog').appendChild(t); $('chatLog').scrollTop=$('chatLog').scrollHeight;
+  try{
+    const rep = await ask(chatSystem(),history);
+    t.remove(); botTurn(rep);
+  }catch(e){ t.remove(); fail($('chatFeedback'),"Se cortó la respuesta."); }
+}
+$('sendChat').onclick = sendTurn;
+$('chatIn').addEventListener('keydown',e=>{
+  if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendTurn(); }
+});
+
+$('endChat').onclick = async ()=>{
+  const mine = history.filter(m=>m.role==="user").map(m=>m.content).join("\n");
+  if(!mine){ alert("Todavía no dijiste nada."); return; }
+  const box=$('chatFeedback');
+  box.innerHTML='<p class="typing">armando la devolución...</p>';
+  const sys=`Sos Cami, coach de pronunciación y comunicación profesional en inglés. Le escribís a una alumna hispanohablante de nivel B1-C2.
+Solo tenés el TEXTO de lo que escribió, así que NO opinás sobre pronunciación ni sonido.
+No corregís gramática ni vocabulario salvo que hayan roto el mensaje.
+Tu criterio no es "¿suena nativa?" sino "¿el que escucha puede procesar esto?".
+Escribí en español rioplatense, cercano y directo, sin jerga técnica sin explicar. Nada de felicitaciones vacías.
+Devolvé SOLO un objeto JSON, sin markdown ni texto alrededor:
+{"donde":"1-2 oraciones: en qué momento el mensaje se volvió difícil de seguir, citando lo que dijo",
+"peso":"una frase suya reescrita con el marcado: // corta thought groups, *palabra* marca la que lleva el peso, a~b marca linking",
+"peso_por_que":"1 oración: qué entiende el otro cuando el peso cae ahí",
+"asesoria":"1 oración: la única cosa concreta para llevar a la asesoría"}`;
+  try{
+    const j = parseJSON(await ask(sys,[{role:"user",content:"Situación: "+scenario+"\n\nLo que dijo la alumna:\n"+mine}]));
+    box.innerHTML =
+      '<div class="result">'+
+      '<h3>Dónde se puso difícil de seguir</h3><p>'+j.donde+'</p>'+
+      '<h3>La frase con el peso donde va</h3>'+
+      '<p class="prosody" style="font-size:20px">'+renderProsody(j.peso)+'</p>'+
+      '<p style="color:var(--muted);font-size:14px;margin-top:-6px">'+j.peso_por_que+'</p>'+
+      '<h3>Para llevar a la asesoría</h3><p>'+j.asesoria+'</p>'+
+      '</div>';
+  }catch(e){ fail(box,"No pude armar la devolución."); }
+};
+
+/* ============================================================
+   2 · ESCUCHAR LA INTENCIÓN
+   ============================================================ */
+$('newDrill').onclick = async ()=>{
+  const box=$('drillArea');
+  box.innerHTML='<p class="typing">buscando una frase...</p>';
+  const sys=`Generás ejercicios de prominencia para profesionales hispanohablantes B1-C2 que trabajan en inglés.
+Elegí una frase corta de trabajo real (reunión, mail, call con cliente) donde mover el acento cambie el significado.
+Devolvé SOLO JSON:
+{"frase":"la frase sin marcar",
+"contexto":"1 oración en español: en qué momento se dice",
+"opciones":[{"marcada":"la frase con *palabra* marcada","significado":"qué está diciendo en realidad, en español, concreto"},{...},{...}],
+"clave":"1 oración en español: qué tiene que escuchar la próxima vez que le pase"}
+Siempre 3 opciones, con la prominencia en palabras distintas y significados claramente distintos.`;
+  try{
+    const j = parseJSON(await ask(sys,[{role:"user",content:"Dame un ejercicio nuevo."}]));
+    let h = '<div class="result"><h3>El momento</h3><p>'+j.contexto+'</p>'+
+            '<p class="prosody" style="font-size:22px;margin:0 0 18px">'+renderProsody(j.frase)+'</p>';
+    j.opciones.forEach(o=>{
+      h += '<div style="border-top:1px solid var(--line);padding-top:13px;margin-top:13px">'+
+           '<p class="prosody" style="font-size:19px;margin:0 0 4px">'+renderProsody(o.marcada)+'</p>'+
+           '<p style="margin:0;font-size:14.5px;color:var(--muted)">'+o.significado+'</p></div>';
+    });
+    h += '<h3 style="margin-top:20px">Lo que te llevás</h3><p>'+j.clave+'</p></div>';
+    box.innerHTML=h;
+  }catch(e){ fail(box,"No pude traer la frase."); }
+};
+
+/* ============================================================
+   3 · DECIRLO EN VOZ ALTA
+   ============================================================ */
+let targetPhrase = "";
+$('markBtn').onclick = async ()=>{
+  const v=$('sayIn').value.trim(); if(!v){ alert("Escribí una frase."); return; }
+  const box=$('markArea');
+  box.innerHTML='<p class="typing">marcando...</p>';
+  const sys=`Marcás prosodia en inglés para alumnas hispanohablantes B1-C2.
+Notación: // corta thought groups · *palabra* es la que lleva el peso (una sola por thought group) · a~b marca dónde se unen las palabras al hablar.
+Devolvé SOLO JSON:
+{"marcada":"la frase con la notación",
+"peso":"1 oración en español: por qué el peso va ahí y qué entiende el que escucha",
+"union":"1 oración en español: qué se une con qué y cómo suena eso realmente",
+"trampa":"1 oración en español: el sonido o el patrón donde un hispanohablante suele perder esta frase"}`;
+  try{
+    const j = parseJSON(await ask(sys,[{role:"user",content:v}]));
+    targetPhrase = v;
+    box.innerHTML='<div class="result">'+
+      '<p class="prosody" style="font-size:23px;margin:0 0 18px">'+renderProsody(j.marcada)+'</p>'+
+      '<h3>Por qué el peso va ahí</h3><p>'+j.peso+'</p>'+
+      '<h3>Qué se une</h3><p>'+j.union+'</p>'+
+      '<h3>Dónde se suele perder</h3><p>'+j.trampa+'</p>'+
+      '<div class="row" style="margin-top:16px"><button class="btn ghost" id="hearIt">Escucharla</button></div></div>';
+    $('hearIt').onclick=()=>say(v);
+    $('micBtn').disabled=false; $('micBtn').textContent='Decirla con el micrófono';
+  }catch(e){ fail(box,"No pude marcar la frase."); }
+};
+
+$('micBtn').onclick = ()=>{
+  const box=$('micArea');
+  if(!SR){
+    box.innerHTML='<p class="err">Este navegador no reconoce voz. Abrilo en Chrome para usar el test.</p>';
+    return;
+  }
+  const rec=new SR();
+  rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
+  $('micBtn').textContent='Escuchando...'; $('micBtn').classList.add('rec'); $('micBtn').disabled=true;
+  box.innerHTML='<p class="typing">decí la frase completa, de corrido</p>';
+  rec.onresult = e=>{
+    const heard = e.results[0][0].transcript;
+    box.innerHTML = compare(targetPhrase, heard);
+  };
+  rec.onerror = e=>{
+    const m = e.error==='not-allowed'
+      ? (micEnv()==="iframe"
+         ? 'El navegador bloquea el micrófono en páginas embebidas. Abrí la app en una pestaña propia.'
+         : 'El navegador bloqueó el micrófono. Habilitalo para este sitio en el candado de la barra de direcciones y volvé a intentar.')
+      : e.error==='network'
+      ? 'Este navegador no llega al servicio de voz. Pasa en Brave y en algunos Edge: abrila en Chrome.'
+      : e.error==='no-speech'
+      ? 'No se escuchó nada. Acercate al micrófono y decí la frase completa.'
+      : 'El micrófono se cortó ('+e.error+').';
+    box.innerHTML='<p class="err">'+m+'</p>';
+  };
+  rec.onend = ()=>{
+    $('micBtn').textContent='Decirla otra vez';
+    $('micBtn').classList.remove('rec'); $('micBtn').disabled=false;
+  };
+  rec.start();
+};
+
+function norm(w){ return w.toLowerCase().replace(/[^a-z']/g,''); }
+function compare(target, heard){
+  const T=target.split(/\s+/), H=heard.split(/\s+/);
+  const hn=H.map(norm), used=new Array(hn.length).fill(false);
+  let lost=0, cursor=0;
+  const marked = T.map(w=>{
+    const n=norm(w); if(!n) return w;
+    let i=-1;
+    for(let k=cursor;k<hn.length;k++){ if(!used[k]&&hn[k]===n){ i=k; break; } }
+    if(i<0) for(let k=0;k<hn.length;k++){ if(!used[k]&&hn[k]===n){ i=k; break; } }
+    if(i>=0){ used[i]=true; cursor=i+1; return '<span class="ok">'+w+'</span>'; }
+    lost++; return '<span class="lost">'+w+'</span>';
+  }).join(' ');
+  const pct = Math.round(100*(T.length-lost)/Math.max(T.length,1));
+  const verdict = lost===0
+    ? 'Llegó entero. El mensaje se procesa sin esfuerzo.'
+    : lost===1
+    ? 'Se perdió una palabra. Trabajá esa y la frase queda.'
+    : 'Se perdieron '+lost+' palabras. Ahí es donde el que escucha tiene que adivinar.';
+  return '<div class="result">'+
+    '<h3>Lo que quisiste decir</h3><p class="heard">'+marked+'</p>'+
+    '<h3>Lo que escuchó</h3><p class="heard">'+heard.replace(/</g,"&lt;")+'</p>'+
+    '<h3>'+pct+'% llegó</h3><p>'+verdict+'</p>'+
+    '<p class="note" style="margin-top:14px">El reconocedor a veces adivina por contexto, así que tomalo como termómetro, no como diagnóstico. Si una palabra se pierde siempre, mandale el audio a Cami.</p>'+
+    '</div>';
+}
+
+/* ============================================================
+   4 · ENVIAR UN AUDIO
+   ============================================================ */
+$('buildCard').onclick = ()=>{
+  const t=$('sTarget').value.trim();
+  if(!t){ alert("Escribí qué estabas practicando."); return; }
+  const txt =
+`Hola Cami, te mando un audio 🎙️
+
+Practicaba: ${t}
+Lo que me costó: ${$('sHard').value.trim() || "—"}
+Test de micrófono: ${$('sTest').value.trim() || "no lo hice"}`;
+  $('sendArea').innerHTML =
+    '<div class="result"><h3>Copialo y mandalo con el audio</h3>'+
+    '<p class="out" id="sendOut">'+txt.replace(/</g,"&lt;")+'</p>'+
+    '<div class="row" style="margin-top:12px"><button class="btn ghost" id="copySend">Copiar</button></div></div>';
+  $('copySend').onclick = ()=>{
+    navigator.clipboard.writeText(txt).then(()=>{ $('copySend').textContent='Copiado'; });
+  };
+};
+
+/* ============================================================
+   5 · MODO COACH
+   ============================================================ */
+const TRAITS = {
+  "Sonidos":["schwa /ə/","/iː/ vs /ɪ/","/æ/ vs /e/","th /θ ð/","/v/ vs /b/","/s/ vs /z/","h inicial","consonantes finales","grupos consonánticos","-ed final"],
+  "Habla conectada":["no une palabras","reductions","elisión","silabea (ritmo parejo)","habla demasiado rápido"],
+  "Prosodia":["word stress","el peso cae siempre al final","no agrupa en thought groups","pausas en lugares raros","entonación plana","no marca la intención"],
+  "Otros":["mucha duda / relleno","volumen bajo","traduce literal del español","se corta y reinicia"]
+};
+const tBox=$('traits');
+Object.entries(TRAITS).forEach(([group,items])=>{
+  const h=document.createElement('h4'); h.textContent=group; tBox.appendChild(h);
+  const row=document.createElement('div'); row.className='chips';
+  items.forEach(it=>{
+    const b=document.createElement('button');
+    b.className='chip'; b.textContent=it; b.setAttribute('aria-pressed','false');
+    b.onclick=()=>b.setAttribute('aria-pressed', b.getAttribute('aria-pressed')==='true'?'false':'true');
+    row.appendChild(b);
+  });
+  tBox.appendChild(row);
+});
+
+$('clearFb').onclick = ()=>{
+  tBox.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+  $('cWho').value=''; $('cTarget').value=''; $('cNotes').value=''; $('coachArea').innerHTML='';
+};
+
+$('genFb').onclick = async ()=>{
+  const picked=[...tBox.querySelectorAll('.chip[aria-pressed="true"]')].map(c=>c.textContent);
+  if(!picked.length && !$('cNotes').value.trim()){
+    alert("Marcá al menos un rasgo o escribí qué escuchaste."); return;
+  }
+  const box=$('coachArea');
+  box.innerHTML='<p class="typing">escribiendo la devolución...</p>';
+  const sys=`Escribís la devolución de audio de Cami a una alumna de Beyond Words, en su voz: español rioplatense, cercana y directa, sin diminutivos ni relleno.
+Cami ya escuchó el audio. Vos NO escuchaste nada: tu único insumo son los rasgos que ella marcó y sus notas. No inventes nada que no esté ahí.
+Su criterio nunca es "sonar nativa" — es que el mensaje se procese sin que el otro tenga que hacer esfuerzo.
+Estructura del mensaje (sin encabezados tipo informe, que fluya como un mensaje real):
+1. Qué escuchó, concreto, sin suavizar ni adornar.
+2. Por qué eso importa cuando habla en una situación real de trabajo: qué le pasa al que escucha.
+3. UNA sola cosa para entrenar esta semana. Una. Con la instrucción exacta de cómo practicarla.
+4. Cierre corto: qué van a mirar juntas en la próxima asesoría.
+Si tiene sentido, incluí una frase marcada con la notación // *palabra* a~b y explicá en una línea cómo leerla.
+Devolvé solo el texto del mensaje, listo para copiar y pegar. Sin markdown, sin títulos, sin comillas alrededor.`;
+  const user=`Alumna y contexto: ${$('cWho').value||"—"}
+Qué estaba diciendo: ${$('cTarget').value||"—"}
+Rasgos que marcó Cami: ${picked.join(", ")||"ninguno"}
+Notas de Cami: ${$('cNotes').value||"—"}`;
+  try{
+    const txt = await ask(sys,[{role:"user",content:user}]);
+    box.innerHTML='<div class="result"><h3>Lista para mandar</h3>'+
+      '<div class="out" id="fbOut">'+txt.replace(/</g,"&lt;")+'</div>'+
+      '<div class="row" style="margin-top:12px"><button class="btn ghost" id="copyFb">Copiar</button></div></div>';
+    $('copyFb').onclick=()=>navigator.clipboard.writeText(txt).then(()=>{$('copyFb').textContent='Copiado';});
+  }catch(e){ fail(box,"No pude escribir la devolución."); }
+};
+</script>
+</body>
+</html>
